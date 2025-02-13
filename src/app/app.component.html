@@ -1,0 +1,38 @@
+<mat-toolbar class="app--toolbar">
+  <span>Weather forecast</span>
+  <button
+    mat-icon-button
+  >
+    <mat-icon>token</mat-icon>
+  </button>
+</mat-toolbar>
+<main class="weather-forecast--container">
+  <search-bar
+    [cities]="citySuggestions()"
+    (searchChange)="handleSearchChange($event)"
+    (citySelect)="handleCitySelect($event)"
+  />
+
+  @if (selectedCities().length > 0) {
+  <city-forecast
+    class="city-forecast"
+    [city]="currentCity()"
+    [isLoading]="isForecastLoading()"
+    [weatherData]="currentWeatherData()"
+    [forecast]="forecastDays()"
+  />
+  } @defer (when selectedCities().length > 0) {
+  <div class="cities--container">
+    @for (city of selectedCities(); track city.id) {
+    <city-card
+      [weatherData]="cityWeatherMap().get(city.name)"
+      [loading]="loadingStates().get(city.name) || false"
+      [selected]="currentCity()?.id === city.id"
+      [error]="errors().get(city.name)"
+      (remove)="handleCityRemove(city)"
+      (select)="handleCitySelect(city)"
+    />
+    }
+  </div>
+  }
+</main>

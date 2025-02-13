@@ -1,0 +1,7 @@
+.city-forecast--container {
+    height: 350px;
+    min-height: 350px;
+    .city-forecast--loading {
+        height: -webkit-fill-available;
+    }
+}

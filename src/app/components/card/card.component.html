@@ -1,0 +1,59 @@
+<mat-card
+  class="city-card relative"
+  [class.selected]="selected"
+  @fadeInOut
+  [@shake]="hasError()"
+  tabindex="0"
+  role="button"
+  matRipple
+  (click)="select.emit()" 
+  (keydown.enter)="select.emit()" 
+  (keydown.space)="select.emit()" 
+>
+  <button
+    mat-icon-button
+    class="absolute top-2 right-2"
+    (click)="remove.emit()"
+    @fadeInOut
+  >
+    <mat-icon>close</mat-icon>
+  </button>
+
+  <mat-card-header @fadeInOut>
+    <mat-card-title>{{ weatherData?.city }}</mat-card-title>
+  </mat-card-header>
+  @if (loading) {
+  <mat-card-content class="flex justify-center items-center h-40" @fadeInOut>
+    <mat-spinner diameter="40"></mat-spinner>
+  </mat-card-content>
+  } @else if (hasError()) {
+  <mat-card-content
+    class="flex flex-col items-center justify-center h-40 text-red-600"
+    @fadeInOut
+  >
+    <mat-icon class="text-3xl">error_outline</mat-icon>
+    <p class="mt-2">{{ errorMessage() }}</p>
+    <button mat-button color="primary" class="mt-2" (click)="retryLoad.emit()">
+      Retry
+    </button>
+  </mat-card-content>
+  } @else {
+  <mat-card-content @fadeInOut>
+    <div class="flex items-center gap-4">
+      <img
+        [src]="weatherIconUrl()"
+        alt="Weather icon"
+        class="w-16 h-16"
+        @weatherIcon
+      />
+      <div>
+        <h2 class="text-2xl font-bold">{{ temperature() }}°C</h2>
+        <p class="text-gray-600">{{ description() }}</p>
+      </div>
+    </div>
+    <p class="mt-2 text-sm text-gray-500">
+      {{ timestamp() | date : "medium" }}
+    </p>
+  </mat-card-content>
+  }
+</mat-card>
