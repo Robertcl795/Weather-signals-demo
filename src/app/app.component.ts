@@ -1,16 +1,13 @@
-import { Component, computed, effect, inject, signal } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { SearchBarComponent } from './components/search/search.component';
 import { City } from './interfaces/weather.interface';
-import { WeatherService } from './components/services/weather.service';
 import { CityForecastComponent } from './components/forecast/forecast.component';
 import { CityCardComponent } from './components/card/card.component';
 import { CommonModule } from '@angular/common';
-import {
-  WeatherStateService,
-} from './components/services/state.service';
+import { WeatherStateService } from './services/state.service';
 
 @Component({
   selector: 'app-root',
@@ -39,11 +36,10 @@ export class AppComponent {
   protected errors = this.weatherState.errors;
   protected isForecastLoading = this.weatherState.isForecastLoading;
 
-  protected currentWeatherData: any = computed(() => {
+  protected currentWeatherData = computed(() => {
     const city = this.currentCity();
-    return city ? this.cityWeatherMap().get(city.name) : null;
+    return city ? this.cityWeatherMap().get(city.id) : undefined;
   });
-
   protected handleSearchChange(term: string): void {
     this.weatherState.searchCities(term);
   }

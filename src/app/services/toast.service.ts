@@ -16,7 +16,7 @@ export class ToastService {
     this._snackBar.open(options.description, options.title, {
       duration: 2000,
       horizontalPosition: 'center',
-      verticalPosition: 'bottom'
+      verticalPosition: 'bottom',
     });
   }
 }

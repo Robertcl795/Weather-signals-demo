@@ -1,20 +1,20 @@
 import { Injectable } from '@angular/core';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
-export class CacheService {
-  private cache = new Map<string, { data: any; timestamp: number }>();
+export class CacheService<T> {
+  private cache = new Map<string, { data: T; timestamp: number }>();
   private readonly TTL = 1000 * 60 * 15; // 15 minutes
 
-  set(key: string, data: any): void {
+  set(key: string, data: T): void {
     this.cache.set(key, {
       data,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
   }
 
-  get(key: string): any | null {
+  get(key: string): T | null {
     const item = this.cache.get(key);
     if (!item) return null;
 

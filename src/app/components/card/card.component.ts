@@ -1,4 +1,4 @@
-import { Component, computed, EventEmitter, Input, OnInit, Output, signal } from '@angular/core';
+import { Component, computed, input, output } from '@angular/core';
 import {
   fadeInOut,
   shakeAnimation,
@@ -11,34 +11,43 @@ import { City, WeatherData } from '../../interfaces/weather.interface';
 import { CommonModule } from '@angular/common';
 
 @Component({
-  standalone: true,
-  imports: [MatCardModule, MatIconModule, MatProgressSpinnerModule, CommonModule],
+  imports: [
+    MatCardModule,
+    MatIconModule,
+    MatProgressSpinnerModule,
+    CommonModule,
+  ],
   animations: [fadeInOut, weatherIconAnimation, shakeAnimation],
-  selector: 'city-card',
+  selector: 'app-city-card',
   templateUrl: 'card.component.html',
-  styleUrl: 'card.component.scss'
+  styleUrl: 'card.component.scss',
 })
 export class CityCardComponent {
-  @Input() weatherData?: WeatherData;
-  @Input() loading = false;
-  @Input() selected = false;
-  @Output() remove = new EventEmitter<void>();
-  @Output() retryLoad = new EventEmitter<void>();
-  @Output() select = new EventEmitter<City>();
+  public weatherData = input<WeatherData | undefined>(undefined);
+  public loading = input<boolean>(false);
+  public selected = input<boolean>(false);
+  public errorMessage = input<string>('');
 
-  public errorMessage = signal<string>('');
-  public hasError = computed(() => Boolean(this.error));
+  public remove = output<void>();
+  public retryLoad = output<void>();
+  public select = output<City['id']>();
 
-  @Input() set error(value: string | undefined) {
-    this.errorMessage.set(value || '');
-  }
-
-
-  public temperature = computed(() => this.weatherData?.temperature ?? 0);
-  public description = computed(() => this.weatherData?.conditions ?? '');
-  public timestamp = computed(() => this.weatherData?.timestamp ?? new Date());
+  public hasError = computed(() => Boolean(this.errorMessage()));
+  public temperature = computed(() => this.weatherData()?.temperature ?? 0);
+  public description = computed(() => this.weatherData()?.conditions ?? '');
+  public timestamp = computed(
+    () => this.weatherData()?.timestamp ?? new Date(),
+  );
 
   public weatherIconUrl = computed(
-    () => `https://openweathermap.org/img/wn/${this.weatherData?.icon}@2x.png`
+    () =>
+      `https://openweathermap.org/img/wn/${this.weatherData()?.icon}@2x.png`,
   );
+
+  public handleSelect(): void {
+    const weatherData = this.weatherData();
+    if (weatherData !== undefined) {
+      this.select.emit(weatherData.id);
+    }
+  }
 }
