@@ -6,9 +6,12 @@
     [formControl]="searchControl"
     [matAutocomplete]="auto"
     placeholder="Start typing a city name..."
+  />
+  <mat-autocomplete
+    #auto="matAutocomplete"
+    (optionSelected)="onOptionSelected($event)"
   >
-  <mat-autocomplete #auto="matAutocomplete" (optionSelected)="onOptionSelected($event)">
-    @for (city of cities; track trackSuggestion(city)) {
+    @for (city of cities(); track trackSuggestion(city)) {
       <mat-option [value]="city">
         {{ city.name }}, {{ city.country }}
       </mat-option>

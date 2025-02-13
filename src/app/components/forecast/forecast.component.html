@@ -1,61 +1,75 @@
-<mat-card class="city-forecast--container p-4" @fadeInOutFast [@shake]="hasError()">
-  @if (!selectedCity()) {
-  <div class="flex flex-col items-center justify-center h-64" @fadeInOutFast>
-    <mat-icon class="text-6xl text-gray-400">cloud</mat-icon>
-    <p class="mt-4 text-gray-600">Select a city to view forecast</p>
-  </div>
-  } @else if (loading()) {
-  <div class="city-forecast--loading flex justify-center items-center h-64" @fadeInOutFast>
-    <mat-spinner diameter="80"></mat-spinner>
-  </div>
-  } @else if (hasError()) {
-  <div
-    class="flex flex-col items-center justify-center h-64 text-red-600"
-    @fadeInOutFast
-  >
-    <mat-icon class="text-5xl">error_outline</mat-icon>
-    <p class="mt-4">{{ errorMessage() }}</p>
-    <button mat-button color="primary" class="mt-4" (click)="retryLoad.emit()">
-      Retry
-    </button>
-  </div>
-  } @else {
-  <mat-card-header @fadeInOutFast>
-    <mat-card-title>Forecast</mat-card-title>
-  </mat-card-header>
-
-  <mat-card-content @fadeInOutFast>
-    <div class="flex items-center gap-4 mt-4">
-      <img
-        [src]="currentWeatherIcon()"
-        alt="Weather"
-        class="w-30 h-30"
-        @weatherIcon
-      />
-      <div>
-        <h2 class="text-3xl font-bold">{{ selectedCity()?.name }}</h2>
-        <h2 class="text-3xl font-bold">{{ currentTemperature() }}°C</h2>
-        <p class="text-lg text-gray-600">{{ currentDescription() }}</p>
-      </div>
+<mat-card
+  class="city-forecast--container p-4"
+  @fadeInOutFast
+  [@shake]="hasError()"
+>
+  @if (!city()) {
+    <div class="flex flex-col items-center justify-center h-64" @fadeInOutFast>
+      <mat-icon class="text-6xl text-gray-400">cloud</mat-icon>
+      <p class="mt-4 text-gray-600">Select a city to view forecast</p>
     </div>
-
+  } @else if (isLoading()) {
     <div
-      class="grid grid-cols-4 gap-4 mt-6"
-      [@listAnimation]="forecastDays().length"
+      class="city-forecast--loading flex justify-center items-center h-64"
+      @fadeInOutFast
     >
-      @for (day of forecastDays(); track day.day) {
-      <div class="text-center">
-        <p class="font-medium">{{ day.day }}</p>
+      <mat-spinner diameter="80"></mat-spinner>
+    </div>
+  } @else if (hasError()) {
+    <div
+      class="flex flex-col items-center justify-center h-64 text-red-600"
+      @fadeInOutFast
+    >
+      <mat-icon class="text-5xl">error_outline</mat-icon>
+      <p class="mt-4">{{ error() }}</p>
+      <button
+        mat-button
+        color="primary"
+        class="mt-4"
+        (click)="retryLoad.emit()"
+      >
+        Retry
+      </button>
+    </div>
+  } @else {
+    <mat-card-header @fadeInOutFast>
+      <mat-card-title>Forecast</mat-card-title>
+    </mat-card-header>
+
+    <mat-card-content @fadeInOutFast>
+      <div class="flex items-center gap-4 mt-4">
         <img
-          [src]="'https://openweathermap.org/img/wn/' + day.icon + '@2x.png'"
+          [src]="currentWeatherIcon()"
           alt="Weather"
-          class="w-10 h-10 mx-auto"
+          class="w-30 h-30"
           @weatherIcon
         />
-        <p class="text-sm">{{ day.temperature }}°C</p>
+        <div>
+          <h2 class="text-3xl font-bold">{{ city()?.name }}</h2>
+          <h2 class="text-3xl font-bold">{{ currentTemperature() }}°C</h2>
+          <p class="text-lg text-gray-600">{{ currentDescription() }}</p>
+        </div>
       </div>
-      }
-    </div>
-  </mat-card-content>
+
+      <div
+        class="grid grid-cols-4 gap-4 mt-6"
+        [@listAnimation]="forecastDays().length"
+      >
+        @for (day of forecastDays(); track trackForecastDay($index, day)) {
+          <div class="text-center">
+            <p class="font-medium">{{ day.day }}</p>
+            <img
+              [src]="
+                'https://openweathermap.org/img/wn/' + day.icon + '@2x.png'
+              "
+              alt="Weather"
+              class="w-10 h-10 mx-auto"
+              @weatherIcon
+            />
+            <p class="text-sm">{{ day.temperature }}°C</p>
+          </div>
+        }
+      </div>
+    </mat-card-content>
   }
 </mat-card>

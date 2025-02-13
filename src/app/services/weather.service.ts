@@ -1,16 +1,16 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, catchError, map, of, retry, tap, throwError } from 'rxjs';
-import { environment } from '../../../environments/environment';
+import { environment } from '../../environments/environment';
 import {
   AirQuality,
+  AirQualityResponse,
   City,
   CurrentWeatherResponse,
   ForecastDay,
   ForecastResponse,
   WeatherData,
-  WeatherResponse,
-} from '../../interfaces/weather.interface';
+} from '../interfaces/weather.interface';
 import { CacheService } from './cache.service';
 import { ToastService } from './toast.service';
 
@@ -19,7 +19,7 @@ import { ToastService } from './toast.service';
 })
 export class WeatherService {
   private http = inject(HttpClient);
-  private cache = inject(CacheService);
+  private cache = inject(CacheService<WeatherData | AirQuality>);
   private toast = inject(ToastService);
   private readonly API_KEY = environment.openWeatherApiKey;
   private readonly WEATHER_API = 'https://api.openweathermap.org/data/2.5';
@@ -31,13 +31,13 @@ export class WeatherService {
     }
 
     return this.http
-      .get<City[]>(
-        `${this.GEOCODING_API}/direct?q=${query}&limit=5&appid=${this.API_KEY}`
-      )
+      .get<
+        City[]
+      >(`${this.GEOCODING_API}/direct?q=${query}&limit=5&appid=${this.API_KEY}`)
       .pipe(
         map((response) => this.mapCities(response)),
         retry(2),
-        catchError(this.handleError)
+        catchError(this.handleError),
       );
   }
 
@@ -51,25 +51,25 @@ export class WeatherService {
 
     return this.http
       .get<CurrentWeatherResponse>(
-        `${this.WEATHER_API}/weather?lat=${city.lat}&lon=${city.lon}&units=metric&appid=${this.API_KEY}`
+        `${this.WEATHER_API}/weather?lat=${city.lat}&lon=${city.lon}&units=metric&appid=${this.API_KEY}`,
       )
       .pipe(
-        map((response) => this.mapCurrentWeatherData(response, city.name)),
+        map((response) => this.mapCurrentWeatherData(response, city)),
         tap((data) => this.cache.set(cacheKey, data)),
         retry(2),
-        catchError(this.handleError)
+        catchError(this.handleError),
       );
   }
 
   getForecast(city: City): Observable<ForecastDay[]> {
     return this.http
       .get<ForecastResponse>(
-        `${this.WEATHER_API}/forecast?lat=${city.lat}&lon=${city.lon}&units=metric&appid=${this.API_KEY}`
+        `${this.WEATHER_API}/forecast?lat=${city.lat}&lon=${city.lon}&units=metric&appid=${this.API_KEY}`,
       )
       .pipe(
         map((response) => this.mapForecastData(response)),
         retry(2),
-        catchError(this.handleError)
+        catchError(this.handleError),
       );
   }
 
@@ -82,8 +82,8 @@ export class WeatherService {
     }
 
     return this.http
-      .get<any>(
-        `${this.WEATHER_API}/air_pollution?lat=${city.lat}&lon=${city.lon}&appid=${this.API_KEY}`
+      .get<AirQualityResponse>(
+        `${this.WEATHER_API}/air_pollution?lat=${city.lat}&lon=${city.lon}&appid=${this.API_KEY}`,
       )
       .pipe(
         map((response) => response.list[0].main),
@@ -92,11 +92,11 @@ export class WeatherService {
           this.notifyAirQuality(data, city.name);
         }),
         retry(2),
-        catchError(this.handleError)
+        catchError(this.handleError),
       );
   }
 
-  private mapCities(response: any[]): City[] {
+  private mapCities(response: City[]): City[] {
     return response.map((item) => ({
       name: item.name,
       country: item.country,
@@ -110,10 +110,11 @@ export class WeatherService {
 
   private mapCurrentWeatherData(
     response: CurrentWeatherResponse,
-    cityName: string
+    { name, id }: City,
   ): WeatherData {
     return {
-      city: cityName,
+      city: name,
+      id,
       temperature: Math.round(response.main.temp),
       conditions: response.weather[0].description,
       icon: response.weather[0].icon,
@@ -158,7 +159,7 @@ export class WeatherService {
       }));
   }
 
-  private handleError(error: any) {
+  private handleError(error: HttpErrorResponse) {
     let errorMessage = 'An error occurred';
     if (error.error instanceof ErrorEvent) {
       errorMessage = `Error: ${error.error.message}`;
